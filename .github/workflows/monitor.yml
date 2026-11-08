@@ -46,3 +46,4 @@ jobs:
             git pull --rebase origin ${{ github.ref_name }} || true
             git push
           fi
+# ok
