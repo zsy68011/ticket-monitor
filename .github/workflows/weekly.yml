@@ -1,0 +1,60 @@
+name: weekly-report
+on:
+  schedule:
+    # UTC 01:00 = 北京时间周一 09:00
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-report
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Collect run stats (last 7 days)
+        id: stats
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SINCE=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          TOTAL=$(gh run list --workflow ticket-monitor.yml --created ">$SINCE" --limit 1000 --json databaseId --jq 'length')
+          OK=$(gh run list --workflow ticket-monitor.yml --created ">$SINCE" --limit 1000 --json conclusion --jq '[.[]|select(.conclusion=="success")]|length')
+          LAST_OK=$(gh run list --workflow ticket-monitor.yml --status success --limit 1 --json createdAt --jq '.[0].createdAt')
+          echo "STATS_TOTAL=$TOTAL" >> "$GITHUB_ENV"
+          echo "STATS_OK=$OK" >> "$GITHUB_ENV"
+          echo "LAST_OK=$LAST_OK" >> "$GITHUB_ENV"
+
+      - name: Send weekly report
+        env:
+          SCT_SENDKEY: ${{ secrets.SCT_SENDKEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          WPUSHER_APP_TOKEN: ${{ secrets.WPUSHER_APP_TOKEN }}
+          WPUSHER_UID: ${{ secrets.WPUSHER_UID }}
+        run: python monitor.py --weekly
+
+      - name: Persist state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          if git diff --cached --quiet; then
+            echo "状态无变化，跳过提交"
+          else
+            git commit -m "chore: 更新周报状态 [skip ci]"
+            git pull --rebase origin ${{ github.ref_name }} || true
+            git push
+          fi

@@ -1,0 +1,7 @@
+# 开票监控配置
+months_ahead: 2          # 监控当月起共 3 个月（当月 + 2）
+push_upcoming: false     # 新演出官宣为「即将开票」时是否也推送（默认只推正式开票）
+venues:
+  ncpa: true             # 国家大剧院本部（歌剧院/音乐厅/戏剧场/小剧场）
+  bpac: true             # 北京艺术中心
+  taihu: false           # 台湖舞美艺术中心（不需要可保持 false）
