@@ -8,6 +8,8 @@
      返回 JSONP: getPerfInfos([...])，每行一个场次，覆盖大剧院本部 + 北京艺术中心 + 台湖
   2) 票务详情  https://openapi.chncpa.org/product/detail?productId={id}&channel=pc
      data.productSaleStatus: 售卖中(990134) / 即将开票(990118) / 已结束(990135)
+  3) 中央民族乐团·民族音乐厅  https://www.cnto.net.cn/ccno/ycyg/yanchuzixun_list.shtml
+     「演出预告」列表页，新开票公告标题带【开票】前缀，按文章 URL 去重
 
 开票判定:
   - 日历中新出现且状态为「售卖中」的演出            -> 新开票
@@ -19,6 +21,7 @@
   python monitor.py --weekly   # 发送周报（周一由 GitHub Actions 定时触发）
 """
 import json
+import html
 import os
 import re
 import sys
@@ -44,6 +47,10 @@ CALENDAR_URL = "https://www.chncpa.org/was5/web/search"
 CAL_CHANNEL = "266971"  # 演出日历频道：全院（含北京艺术中心、台湖）
 DETAIL_URL = "https://openapi.chncpa.org/product/detail"
 
+CNTO_LIST_URL = "https://www.cnto.net.cn/ccno/ycyg/yanchuzixun_list.shtml"
+CNTO_BASE = "https://www.cnto.net.cn"
+CNTO_VENUE = "中央民族乐团·民族音乐厅"
+
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 TIMEOUT = 30
@@ -63,7 +70,7 @@ UPCOMING_RECHECK_EVERY_MIN = 0  # >0 时限制对「即将开票」商品的复�
 DEFAULT_CONFIG = {
     "months_ahead": 2,        # 监控当月起共 3 个月（current + 2）
     "push_upcoming": False,   # 新演出官宣为「即将开票」时是否也推送
-    "venues": {"ncpa": True, "bpac": True, "taihu": False},
+    "venues": {"ncpa": True, "bpac": True, "taihu": False, "cnto": True},
 }
 
 # ----------------------------------------------------------------------------
@@ -99,6 +106,25 @@ def fetch_detail(pid: str):
     if not data.get("productId"):
         raise ValueError(f"详情返回为空: {pid}")
     return data
+
+
+def fetch_cnto_opens():
+    """抓中央民族乐团「演出预告」列表页，返回【开票】公告文章列表"""
+    r = http_get(CNTO_LIST_URL)
+    if r.encoding is None or r.encoding.lower() in ("iso-8859-1", "ascii"):
+        r.encoding = "utf-8"  # 服务器未声明字符集，页面实为 UTF-8
+    items, seen = [], set()
+    for m in re.finditer(
+            r'<a[^>]+href="(/ccno/ycyg/[^"]+\.shtml)"[^>]*>([^<]+)</a>', r.text):
+        path, title = m.group(1).strip(), html.unescape(m.group(2)).strip()
+        if path.endswith("yanchuzixun_list.shtml") or path in seen:
+            continue
+        if not (title.startswith("【开票") or title.startswith("【购票")):
+            continue
+        seen.add(path)
+        items.append({"pid": f"cnto:{path}", "title": title,
+                      "url": CNTO_BASE + path})
+    return items
 
 
 # ----------------------------------------------------------------------------
@@ -237,6 +263,10 @@ def maybe_alert(state, reason: str):
 # 事件与消息
 # ----------------------------------------------------------------------------
 def fmt_event(e):
+    if e.get("url"):  # 中央民族乐团开票公告（详情见文章）
+        return "\n".join([f"**{e['name']}**",
+                          f"- 场馆：{e['vname']}",
+                          f"- [查看开票公告]({e['url']})"])
     lines = [f"**{e['name']}**"]
     lines.append(f"- 场馆：{e['vname']}")
     lines.append(f"- 时间：{e['date_range']}")
@@ -418,6 +448,34 @@ def monitor(cfg, state):
     if detail_total and detail_fail == detail_total:
         maybe_alert(state, "票务详情接口全部请求失败")
 
+    # ---- 中央民族乐团·民族音乐厅：开票公告文章 ----
+    if cfg["venues"].get("cnto", True):
+        try:
+            articles = fetch_cnto_opens()
+        except Exception as e:  # noqa: BLE001
+            print(f"[ERR] 民族音乐厅列表抓取失败: {e}")
+            maybe_alert(state, f"中央民族乐团演出预告抓取失败: {e}")
+            articles = None
+        if articles is not None:
+            cnto_first = state.get("cnto_init") is None  # 首次接入静默收录
+            for a in articles:
+                if a["pid"] in state["products"]:
+                    continue
+                state["products"][a["pid"]] = {
+                    "status": "已发布", "name": a["title"], "vname": CNTO_VENUE,
+                    "bucket": "cnto", "dates": [], "url": a["url"],
+                    "first_seen": today.strftime("%Y-%m-%d %H:%M"),
+                }
+                if bootstrap or cnto_first:
+                    continue
+                e = {"type": "new_on_sale", "pid": a["pid"], "name": a["title"],
+                     "vname": CNTO_VENUE, "date_range": "详见公告",
+                     "url": a["url"]}
+                events.append(e); log_week_event(state, e)
+            state["cnto_init"] = today.strftime("%Y-%m-%d")
+            if cnto_first:
+                print(f"[OK] 民族音乐厅首次收录 {len(articles)} 条开票公告（静默）")
+
     # ---- 首启收尾 ----
     if bootstrap:
         state["bootstrap"] = False
@@ -451,8 +509,13 @@ def mk_event(pid, p, drange, etype, added=None):
 def prune(state):
     """清理：已结束超过60天的演出移出状态；周报日志保留最近14天"""
     cutoff = (now_bj() - dt.timedelta(days=60)).strftime("%Y-%m-%d")
+    cutoff_cnto = (now_bj() - dt.timedelta(days=120)).strftime("%Y-%m-%d")
     for pid in list(state["products"]):
         rec = state["products"][pid]
+        if rec.get("bucket") == "cnto":
+            if (rec.get("first_seen") or "") < cutoff_cnto:
+                del state["products"][pid]  # 旧公告清理
+            continue
         dates = rec.get("dates") or []
         last_date = max(dates) if dates else (rec.get("first_seen") or "")
         if rec.get("status") == STATUS_ENDED and last_date < cutoff:

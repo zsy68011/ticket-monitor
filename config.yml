@@ -5,3 +5,4 @@ venues:
   ncpa: true             # 国家大剧院本部（歌剧院/音乐厅/戏剧场/小剧场）
   bpac: true             # 北京艺术中心
   taihu: false           # 台湖舞美艺术中心（不需要可保持 false）
+  cnto: true             # 中央民族乐团·民族音乐厅（开票公告文章）
