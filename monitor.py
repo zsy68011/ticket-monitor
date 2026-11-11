@@ -452,9 +452,13 @@ def monitor(cfg, state):
     if cfg["venues"].get("cnto", True):
         try:
             articles = fetch_cnto_opens()
+            state["cnto_fail"] = 0
         except Exception as e:  # noqa: BLE001
             print(f"[ERR] 民族音乐厅列表抓取失败: {e}")
-            maybe_alert(state, f"中央民族乐团演出预告抓取失败: {e}")
+            streak = state.get("cnto_fail", 0) + 1
+            state["cnto_fail"] = streak
+            if streak >= 2:  # 连续2次失败才告警，瞬时抖动静默重试
+                maybe_alert(state, f"中央民族乐团演出预告连续{streak}次抓取失败: {e}")
             articles = None
         if articles is not None:
             cnto_first = state.get("cnto_init") is None  # 首次接入静默收录
