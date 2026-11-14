@@ -51,6 +51,14 @@ CNTO_LIST_URL = "https://www.cnto.net.cn/ccno/ycyg/yanchuzixun_list.shtml"
 CNTO_BASE = "https://www.cnto.net.cn"
 CNTO_VENUE = "中央民族乐团·民族音乐厅"
 
+BJYT_API = "https://www.bjconcerthall.cn/yjzd-webapp/api/project/list"
+BJYT_VENUE = "北京音乐厅"
+BJYT_BUY_URL = "https://www.bjconcerthall.cn/bjyyt/ycgp/ycgp.shtml"
+
+ZSYT_URL = "http://www.zsyyt.org/text_list.asp"
+ZSYT_BASE = "http://www.zsyyt.org/"
+ZSYT_VENUE = "中山公园音乐堂"
+
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 TIMEOUT = 30
@@ -70,7 +78,8 @@ UPCOMING_RECHECK_EVERY_MIN = 0  # >0 时限制对「即将开票」商品的复�
 DEFAULT_CONFIG = {
     "months_ahead": 2,        # 监控当月起共 3 个月（current + 2）
     "push_upcoming": False,   # 新演出官宣为「即将开票」时是否也推送
-    "venues": {"ncpa": True, "bpac": True, "taihu": False, "cnto": True},
+    "venues": {"ncpa": True, "bpac": True, "taihu": False, "cnto": True,
+               "bjyt": True, "zsyt": True},
 }
 
 # ----------------------------------------------------------------------------
@@ -125,6 +134,138 @@ def fetch_cnto_opens():
         items.append({"pid": f"cnto:{path}", "title": title,
                       "url": CNTO_BASE + path})
     return items
+
+
+def fetch_bjyt_products():
+    """北京音乐厅在售/待售项目列表（官方API）"""
+    url = (BJYT_API + "?page=1&pageSize=100&firstClassId=&secondClassId"
+           "&yyyyMM=&date=&projectName=")
+    r = http_get(url)
+    data = r.json().get("data") or {}
+    out = []
+    for it in data.get("dataList") or []:
+        rounds = json.loads(it.get("projectRound") or "[]")
+        dates = [x.get("eventName", "").split(" ")[0] for x in rounds]
+        vname = (rounds[0].get("venueName") if rounds else "") or BJYT_VENUE
+        if "北京音乐厅" in vname:
+            vname = BJYT_VENUE  # API返回"北京音乐厅1.0"，统一名称
+        prices = [p.get("priceName") for p in (rounds[0].get("priceList") or [])
+                  if p.get("priceName")]
+        out.append({
+            "pid": f"bjyt:{it.get('projectId')}",
+            "name": (it.get("projectName") or "").strip(),
+            "status": STATUS_ONSALE if it.get("projectSaleState") == 2 else STATUS_UPCOMING,
+            "vname": vname,
+            "dates": [d for d in dates if d.startswith("2")],
+            "price": "/".join(prices),
+            "buy_url": BJYT_BUY_URL,
+        })
+    return out
+
+
+def fetch_zsyt_products():
+    """中山公园音乐堂演出列表（官方授权订票站 zsyyt.org，GBK编码）"""
+    r = http_get(ZSYT_URL)
+    r.encoding = "gbk"
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", r.text, re.S)
+    out = []
+    for row in rows:
+        tds = re.findall(r"<td[^>]*>(.*?)</td>", row, re.S)
+        if len(tds) < 4:
+            continue
+        name_html = tds[0]
+        name = re.sub(r"<[^>]+>|&nbsp;|\s+", "", name_html)
+        m = re.search(r"pic_detail\.asp\?id=(\d+)", name_html)
+        if not (name and m):
+            continue
+        venue = re.sub(r"<[^>]+>|\s+", "", tds[2])
+        if "中山" not in venue:
+            continue
+        raw_dates = re.sub(r"<[^>]+>|\s+", "", tds[1])
+        dates = sorted({x.replace(".", "-") for x in
+                        re.findall(r"\d{4}\.\d{2}\.\d{2}", raw_dates)})
+        prices = html.unescape(re.sub(r"<[^>]+>", "/", tds[3]))
+        prices = re.sub(r"\s+", "/", prices)
+        prices = re.sub(r"/{2,}", "/", prices).strip("/")
+        onsale = "订票" in re.sub(r"<[^>]+>|\s+", "", tds[-1])
+        out.append({
+            "pid": f"zsyt:{m.group(1)}",
+            "name": name,
+            "status": STATUS_ONSALE if onsale else STATUS_UPCOMING,
+            "vname": ZSYT_VENUE,
+            "dates": dates,
+            "price": prices,
+            "buy_url": ZSYT_BASE + f"pic_detail.asp?id={m.group(1)}",
+        })
+    return out
+
+
+def scan_ext_products(state, cfg, events, fetcher, bucket, today):
+    """通用外部源扫描：北京音乐厅/中山音乐堂等产品列表"""
+    init_key = f"{bucket}_init"
+    try:
+        items = fetcher()
+        state[f"{bucket}_fail"] = 0
+    except Exception as e:  # noqa: BLE001
+        streak = state.get(f"{bucket}_fail", 0) + 1
+        state[f"{bucket}_fail"] = streak
+        print(f"[ERR] {bucket} 抓取失败: {e}")
+        if streak >= 2:  # 连续2次失败才告警
+            maybe_alert(state, f"{bucket} 连续{streak}次抓取失败: {e}")
+        return
+
+    first = state.get(init_key) is None  # 首次接入静默收录
+    n_new = 0
+    for p in items:
+        pid = p["pid"]
+        prev = state["products"].get(pid)
+        if prev is None:
+            n_new += 1
+            state["products"][pid] = {
+                "status": p["status"], "name": p["name"], "vname": p["vname"],
+                "bucket": bucket, "dates": p["dates"], "price": p["price"],
+                "buy_url": p["buy_url"],
+                "first_seen": today.strftime("%Y-%m-%d %H:%M"),
+            }
+            if first:
+                continue
+            if p["status"] == STATUS_ONSALE:
+                e = {"type": "new_on_sale", "pid": pid, "name": p["name"],
+                     "vname": p["vname"],
+                     "date_range": date_range_str(p["dates"], "", ""),
+                     "price": p["price"], "buy_url": p["buy_url"]}
+                events.append(e); log_week_event(state, e)
+            elif p["status"] == STATUS_UPCOMING and cfg["push_upcoming"]:
+                e = {"type": "upcoming", "pid": pid, "name": p["name"],
+                     "vname": p["vname"],
+                     "date_range": date_range_str(p["dates"], "", ""),
+                     "price": p["price"], "buy_url": p["buy_url"]}
+                events.append(e); log_week_event(state, e)
+            continue
+        # 已知演出：状态变化 / 加场
+        added = sorted(set(p["dates"]) - set(prev.get("dates") or []))
+        if added and prev.get("status") == STATUS_ONSALE:
+            prev["dates"] = p["dates"]
+            e = {"type": "session_added", "pid": pid, "name": p["name"],
+                 "vname": p["vname"],
+                 "date_range": date_range_str(p["dates"], "", ""),
+                 "price": p["price"], "buy_url": p["buy_url"],
+                 "added": added}
+            events.append(e); log_week_event(state, e)
+        elif added:
+            prev["dates"] = p["dates"]
+        if p["status"] != prev.get("status"):
+            old = prev.get("status")
+            prev["status"] = p["status"]
+            if p["status"] == STATUS_ONSALE and old not in (None, STATUS_ENDED):
+                e = {"type": "on_sale", "pid": pid, "name": p["name"],
+                     "vname": p["vname"],
+                     "date_range": date_range_str(p["dates"], "", ""),
+                     "price": p["price"], "buy_url": p["buy_url"]}
+                events.append(e); log_week_event(state, e)
+    state[init_key] = today.strftime("%Y-%m-%d")
+    if first:
+        print(f"[OK] {bucket} 首次收录 {n_new} 条（静默）")
 
 
 # ----------------------------------------------------------------------------
@@ -274,7 +415,10 @@ def fmt_event(e):
         lines.append(f"- 场次：{e['playtime']}")
     if e.get("price"):
         lines.append(f"- 票价：{e['price']}")
-    lines.append(f"- [立即购票](https://wticket.chncpa.org/product.html?id={e['pid']})")
+    if e.get("buy_url"):
+        lines.append(f"- [立即购票]({e['buy_url']})")
+    else:
+        lines.append(f"- [立即购票](https://wticket.chncpa.org/product.html?id={e['pid']})")
     return "\n".join(lines)
 
 
@@ -480,6 +624,12 @@ def monitor(cfg, state):
             if cnto_first:
                 print(f"[OK] 民族音乐厅首次收录 {len(articles)} 条开票公告（静默）")
 
+    # ---- 北京音乐厅 / 中山公园音乐堂 ----
+    if cfg["venues"].get("bjyt", True):
+        scan_ext_products(state, cfg, events, fetch_bjyt_products, "bjyt", today)
+    if cfg["venues"].get("zsyt", True):
+        scan_ext_products(state, cfg, events, fetch_zsyt_products, "zsyt", today)
+
     # ---- 首启收尾 ----
     if bootstrap:
         state["bootstrap"] = False
@@ -522,6 +672,11 @@ def prune(state):
             continue
         dates = rec.get("dates") or []
         last_date = max(dates) if dates else (rec.get("first_seen") or "")
+        if rec.get("bucket") in ("bjyt", "zsyt"):
+            # 外部源：项目下架/过期即清理（dates已为ISO格式）
+            if dates and last_date < cutoff:
+                del state["products"][pid]
+            continue
         if rec.get("status") == STATUS_ENDED and last_date < cutoff:
             del state["products"][pid]
     if state["upcoming_checked"]:
