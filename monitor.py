@@ -65,6 +65,17 @@ QPT_LIST_URL = "https://www.qianpiaotong.cn/mobile/ProductList.shtml"
 QPT_BASE = "https://www.qianpiaotong.cn"
 GTYS_VENUE = "国图艺术中心"
 
+CLCN_API = "https://bjreading.clcn.net.cn/cmss/apiweb/activity"
+CLCN_DETAIL = "https://www.clcn.net.cn/event/activity/detail?event_id="
+CLCN_VENUE = "首都图书馆"
+
+XSD_URL = "https://xsd.bjchy.gov.cn/"
+XSD_VENUE = "北京朝阳·宣传文化中心"
+
+# 演出类活动关键词（用于首图/朝阳文章源的过滤）
+PERF_KW = ("音乐会", "演出", "戏曲", "演奏", "音乐", "剧场", "歌剧", "话剧",
+           "相声", "曲艺", "杂技", "舞剧", "京剧", "昆曲", "演唱会", "抢票")
+
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 TIMEOUT = 30
@@ -85,7 +96,8 @@ DEFAULT_CONFIG = {
     "months_ahead": 2,        # 监控当月起共 3 个月（current + 2）
     "push_upcoming": False,   # 新演出官宣为「即将开票」时是否也推送
     "venues": {"ncpa": True, "bpac": True, "taihu": False, "cnto": True,
-               "bjyt": True, "zsyt": True, "gtys": True},
+               "bjyt": True, "zsyt": True, "gtys": True, "clcn": True,
+               "xsd": True},
 }
 
 # ----------------------------------------------------------------------------
@@ -270,6 +282,106 @@ def fetch_gtys_products():
     if not out:
         raise RuntimeError("购票通列表为空或结构变更")
     return out
+
+
+def fetch_clcn_articles():
+    """首都图书馆活动列表（含剧场公益演出，POST表单接口）"""
+    r = requests.post(
+        CLCN_API,
+        data={"name": "", "startTime": "", "endTime": "", "channelId": "",
+              "channelChildId": "", "activity_status": "", "limit": "50",
+              "page": "1"},
+        headers={"User-Agent": UA, "Referer": "https://www.clcn.net.cn/event",
+                 "X-Requested-With": "XMLHttpRequest"},
+        timeout=TIMEOUT,
+    )
+    items = r.json().get("data") or []
+    out = []
+    for it in items:
+        name = (it.get("name") or "").strip()
+        if not name:
+            continue
+        is_perf = any(w in name for w in PERF_KW)
+        note = ""
+        if it.get("start_time"):
+            note = f"活动时间：{it['start_time']}"
+        if it.get("appointment_start"):
+            note += f"｜预约开始：{it['appointment_start']}"
+        out.append({
+            "pid": f"clcn:{it['id']}",
+            "title": name,
+            "url": CLCN_DETAIL + str(it["id"]),
+            "vname": CLCN_VENUE,
+            "kind": "clcn_dyn" if is_perf else None,
+            "note": note,
+        })
+    if not out:
+        raise RuntimeError("首图活动列表为空或结构变更")
+    return out
+
+
+def fetch_xsd_articles():
+    """北京朝阳·宣传文化中心（xsd.bjchy.gov.cn）首页公告/预约/新闻轮换"""
+    r = http_get(XSD_URL)
+    out, seen = [], set()
+    pat = (r'<a[^>]+href="(?:https://xsd\.bjchy\.gov\.cn)?(/(?:news|subscribe)'
+           r'/([0-9A-Fa-f]{32}))"[^>]*>(?:\s*(?:<img[^>]*>)?)*\s*<span[^>]*>'
+           r'([^<]{4,80})</span>')
+    for m in re.finditer(pat, r.text, re.S):
+        path, hsh, title = m.group(1), m.group(2), m.group(3).strip()
+        key = hsh
+        if key in seen or not title:
+            continue
+        seen.add(key)
+        out.append({
+            "pid": f"xsd:{hsh}",
+            "title": title,
+            "url": "https://xsd.bjchy.gov.cn" + path,
+            "vname": XSD_VENUE,
+            "kind": "xsd_dyn" if any(w in title for w in PERF_KW) else None,
+            "note": "",
+        })
+    if not out:
+        raise RuntimeError("朝阳公告列表为空或结构变更")
+    return out
+
+
+def scan_articles(state, cfg, events, fetcher, bucket, today):
+    """通用文章/公告源扫描（首图/朝阳等），kind非空的新文章才推送"""
+    init_key = f"{bucket}_init"
+    try:
+        items = fetcher()
+        state[f"{bucket}_fail"] = 0
+    except Exception as e:  # noqa: BLE001
+        streak = state.get(f"{bucket}_fail", 0) + 1
+        state[f"{bucket}_fail"] = streak
+        print(f"[ERR] {bucket} 抓取失败: {e}")
+        if streak >= 2:
+            maybe_alert(state, f"{bucket} 连续{streak}次抓取失败: {e}")
+        return
+    first = state.get(init_key) is None
+    n_new = 0
+    for a in items:
+        pid = a["pid"]
+        if pid in state["products"]:
+            continue
+        n_new += 1
+        state["products"][pid] = {
+            "status": "已发布", "name": a["title"], "vname": a["vname"],
+            "bucket": bucket, "dates": [], "url": a["url"], "kind": a["kind"],
+            "first_seen": today.strftime("%Y-%m-%d %H:%M"),
+        }
+        if first or not a["kind"]:
+            continue
+        e = {"type": a["kind"], "pid": pid, "name": a["title"],
+             "vname": a["vname"], "date_range": "详见公告",
+             "url": a["url"], "link_label": "查看详情"}
+        if a.get("note"):
+            e["note"] = a["note"]
+        events.append(e); log_week_event(state, e)
+    state[init_key] = today.strftime("%Y-%m-%d")
+    if first:
+        print(f"[OK] {bucket} 首次收录 {n_new} 条（静默）")
 
 
 def scan_ext_products(state, cfg, events, fetcher, bucket, today):
@@ -476,10 +588,12 @@ def maybe_alert(state, reason: str):
 # 事件与消息
 # ----------------------------------------------------------------------------
 def fmt_event(e):
-    if e.get("url"):  # 中央民族乐团公告（详情见文章）
-        return "\n".join([f"**{e['name']}**",
-                          f"- 场馆：{e['vname']}",
-                          f"- [{e.get('link_label', '查看详情')}]({e['url']})"])
+    if e.get("url"):  # 公告/文章类事件（详情见链接）
+        lines = [f"**{e['name']}**", f"- 场馆：{e['vname']}"]
+        if e.get("note"):
+            lines.append(f"- {e['note']}")
+        lines.append(f"- [{e.get('link_label', '查看详情')}]({e['url']})")
+        return "\n".join(lines)
     lines = [f"**{e['name']}**"]
     lines.append(f"- 场馆：{e['vname']}")
     lines.append(f"- 时间：{e['date_range']}")
@@ -497,12 +611,13 @@ def fmt_event(e):
 def build_message(events):
     tag = {"new_on_sale": "新开票", "on_sale": "正式开票",
            "session_added": "加场", "upcoming": "官宣待开票",
-           "cnto_dyn": "乐团动态"}
+           "cnto_dyn": "乐团动态", "clcn_dyn": "首图活动", "xsd_dyn": "朝阳文化"}
     parts = ["## 🎫 开票提醒\n"]
     by_type = {}
     for e in events:
         by_type.setdefault(e["type"], []).append(e)
-    order = ["new_on_sale", "on_sale", "session_added", "upcoming", "cnto_dyn"]
+    order = ["new_on_sale", "on_sale", "session_added", "upcoming",
+             "cnto_dyn", "clcn_dyn", "xsd_dyn"]
     for t in order:
         for i, e in enumerate(by_type.get(t, []), 1):
             prefix = tag[t]
@@ -711,6 +826,10 @@ def monitor(cfg, state):
         scan_ext_products(state, cfg, events, fetch_zsyt_products, "zsyt", today)
     if cfg["venues"].get("gtys", True):
         scan_ext_products(state, cfg, events, fetch_gtys_products, "gtys", today)
+    if cfg["venues"].get("clcn", True):
+        scan_articles(state, cfg, events, fetch_clcn_articles, "clcn", today)
+    if cfg["venues"].get("xsd", True):
+        scan_articles(state, cfg, events, fetch_xsd_articles, "xsd", today)
 
     # ---- 首启收尾 ----
     if bootstrap:
@@ -757,6 +876,11 @@ def prune(state):
         if rec.get("bucket") in ("bjyt", "zsyt", "gtys"):
             # 外部源：项目下架/过期即清理（dates已为ISO格式）
             if dates and last_date < cutoff:
+                del state["products"][pid]
+            continue
+        if rec.get("bucket") in ("clcn", "xsd"):
+            # 公告类：按收录时间过期清理
+            if (rec.get("first_seen") or "") < cutoff:
                 del state["products"][pid]
             continue
         if rec.get("status") == STATUS_ENDED and last_date < cutoff:
