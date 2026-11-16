@@ -8,30 +8,30 @@
  "upcoming_checked": {
   "10002895": 1794450641.6942546,
   "10002909": 1794210713.874205,
-  "10002984": 1794834944.9614863,
-  "10003006": 1794834946.49939,
-  "10003039": 1794834947.5905638,
-  "10003040": 1794834948.758438,
-  "10003042": 1794834949.8773403,
+  "10002984": 1794835853.9545882,
+  "10003006": 1794835855.7850611,
+  "10003039": 1794835856.9843488,
+  "10003040": 1794835858.3223727,
+  "10003042": 1794835859.386132,
   "10003048": 1794210721.0091348,
-  "10003049": 1794834951.0044456,
+  "10003049": 1794835860.620326,
   "10003050": 1794210723.4806798,
   "10003051": 1794210724.509533,
   "10003052": 1794210725.5518372,
   "10003053": 1794452456.8268044,
-  "10003054": 1794834952.4931598,
+  "10003054": 1794835862.0276096,
   "10003055": 1794452460.006054,
-  "10003056": 1794834954.8240368,
-  "10003058": 1794834959.3620877,
+  "10003056": 1794835863.211673,
+  "10003058": 1794835864.3572588,
   "10003060": 1794452465.3249013,
   "10003062": 1794807059.117663,
   "10003065": 1794807060.177291,
-  "10003066": 1794834963.3247206,
-  "10003067": 1794834964.4296277,
-  "10003069": 1794834966.991316,
-  "10003070": 1794834968.507669,
-  "10003071": 1794834971.5893805,
-  "10003072": 1794834972.694486
+  "10003066": 1794835865.4738324,
+  "10003067": 1794835866.649601,
+  "10003069": 1794835867.9534686,
+  "10003070": 1794835868.9792812,
+  "10003071": 1794835870.0103116,
+  "10003072": 1794835871.1387622
  },
  "week_log": [
   {
@@ -1708,6 +1708,352 @@
     "2027-01-16"
    ],
    "first_seen": "2026-11-16 19:30"
+  },
+  "gtys:68018": {
+   "status": "售卖中",
+   "name": "【北京】德奥古典主义?波兰浪漫之魂——钢琴与小提琴音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-21"
+   ],
+   "price": "￥80.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68018.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68593": {
+   "status": "售卖中",
+   "name": "【北京】《梁祝》唯美经典名曲音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-22"
+   ],
+   "price": "￥50.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68593.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68408": {
+   "status": "售卖中",
+   "name": "【北京】北方昆曲剧院经典折子戏 《千金记?别姬》《荆钗记?见娘》《绣襦记?打子》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-23"
+   ],
+   "price": "￥68.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68408.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68426": {
+   "status": "售卖中",
+   "name": "【北京】北方昆曲剧院经典折子戏 《西游记?胖姑学舌》《雁翎甲?盗甲》《牧羊记?望乡》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-24"
+   ],
+   "price": "￥68.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68426.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68544": {
+   "status": "售卖中",
+   "name": "【北京】北方昆曲剧院经典折子戏 《夺锦标?扈家庄》《孽海记?思凡》《占花魁?受吐》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-25"
+   ],
+   "price": "￥68.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68544.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68428": {
+   "status": "售卖中",
+   "name": "【北京】北方昆曲剧院经典折子戏 《牡丹亭?游园惊梦》《白兔记?出猎》《烂柯山?痴梦》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-26"
+   ],
+   "price": "￥68.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68428.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68431": {
+   "status": "售卖中",
+   "name": "【北京】北方昆曲剧院经典剧目 《玉簪记》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-27"
+   ],
+   "price": "￥68.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68431.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65714": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】伦敦西区音乐剧现场《摩登礼帽》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-10-11",
+    "2026-11-28"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65714.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65828": {
+   "status": "售卖中",
+   "name": "【北京】十年之期已到——星玖交响管乐团动漫特别公演",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-28"
+   ],
+   "price": "￥180.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65828.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65314": {
+   "status": "售卖中",
+   "name": "【北京】苏东坡音乐诗剧《人生的盛宴》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-29"
+   ],
+   "price": "￥80.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65314.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65717": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】英国国家剧院现场《哈姆雷特》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-10-10",
+    "2026-11-29"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65717.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68430": {
+   "status": "售卖中",
+   "name": "【北京】北方昆曲剧院经典折子戏 《牡丹亭?春香闹学》《宝剑记?林冲夜奔》《焚香记?阳告》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-30"
+   ],
+   "price": "￥68.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68430.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65716": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】莎士比亚环球剧场影像《马尔菲公爵夫人》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-10-31",
+    "2026-12-05"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65716.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65711": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】伦敦西区音乐剧现场《近乎正常》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-10-24",
+    "2026-12-06"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65711.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:69369": {
+   "status": "售卖中",
+   "name": "【北京】“璇音?回响”扬琴系列专场音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-11"
+   ],
+   "price": "￥80.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/69369.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:69317": {
+   "status": "售卖中",
+   "name": "【北京】《星途同歌》深空合唱团建团六周年纪念专场音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-12"
+   ],
+   "price": "￥180.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/69317.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:68993": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】法兰西喜剧院话剧《女学究》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-08",
+    "2026-12-13"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/68993.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65750": {
+   "status": "售卖中",
+   "name": "【北京】大师之夜?浪漫主义的美与激情——叶甫根尼?米哈伊洛夫钢琴独奏新年音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-18"
+   ],
+   "price": "￥80.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65750.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:71232": {
+   "status": "售卖中",
+   "name": "【北京】红旗漫卷歌九州--合唱音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-19"
+   ],
+   "price": "￥60.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/71232.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65715": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】百老汇音乐剧《欢乐岁月》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-10-25",
+    "2026-12-19"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65715.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:67270": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】英国皇家芭蕾舞团及歌剧院现场《托斯卡》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-11-07",
+    "2026-12-20"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/67270.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65749": {
+   "status": "售卖中",
+   "name": "【北京】冬至阳生春又来——古籍国风冬至音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-20"
+   ],
+   "price": "￥80.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65749.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65674": {
+   "status": "售卖中",
+   "name": "【北京】北京&#183;熊猫合唱团&#183;我们的歌专场音乐会&#183;北京站",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-26"
+   ],
+   "price": "￥180.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65674.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65713": {
+   "status": "售卖中",
+   "name": "【北京】【高清放映】伦敦西区话剧影像《红色》",
+   "vname": "国图电影院",
+   "bucket": "gtys",
+   "dates": [
+    "2026-10-18",
+    "2026-12-27"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65713.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:69036": {
+   "status": "售卖中",
+   "name": "【北京】《春节序曲》《拉德斯基进行曲》中外经典名曲2027跨年交响新年音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2026-12-31",
+    "2027-01-01"
+   ],
+   "price": "￥180.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/69036.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65106": {
+   "status": "售卖中",
+   "name": "【北京】【早鸟5折】施特劳斯圆舞曲2027交响新年音乐会-北京站",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2027-01-03"
+   ],
+   "price": "￥180.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65106.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:65718": {
+   "status": "售卖中",
+   "name": "【北京】《理想人声&#183;阿卡贝拉音乐会》",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2027-01-22"
+   ],
+   "price": "￥100.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/65718.shtml",
+   "first_seen": "2026-11-16 21:30"
+  },
+  "gtys:71231": {
+   "status": "售卖中",
+   "name": "【北京】清音启岁——吕鑫与京中室内乐团新年音乐会",
+   "vname": "国图艺术中心",
+   "bucket": "gtys",
+   "dates": [
+    "2027-01-02",
+    "2027-11-01"
+   ],
+   "price": "￥120.00元起",
+   "buy_url": "https://www.qianpiaotong.cn/mobile/Product/71231.shtml",
+   "first_seen": "2026-11-16 21:30"
   }
  },
  "cnto_init": "2026-11-16",
@@ -1716,5 +2062,7 @@
  "bjyt_init": "2026-11-16",
  "zsyt_fail": 0,
  "zsyt_init": "2026-11-16",
- "cnto_v2": "2026-11-16"
+ "cnto_v2": "2026-11-16",
+ "gtys_fail": 0,
+ "gtys_init": "2026-11-16"
 }
