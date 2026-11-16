@@ -9,7 +9,7 @@
   2) 票务详情  https://openapi.chncpa.org/product/detail?productId={id}&channel=pc
      data.productSaleStatus: 售卖中(990134) / 即将开票(990118) / 已结束(990135)
   3) 中央民族乐团·民族音乐厅  https://www.cnto.net.cn/ccno/ycyg/yanchuzixun_list.shtml
-     「演出预告」列表页，新开票公告标题带【开票】前缀，按文章 URL 去重
+     「演出预告」列表页全部新文章：【开票】前缀→新开票；其他→乐团动态（含其他场馆演出官宣）
 
 开票判定:
   - 日历中新出现且状态为「售卖中」的演出            -> 新开票
@@ -118,7 +118,8 @@ def fetch_detail(pid: str):
 
 
 def fetch_cnto_opens():
-    """抓中央民族乐团「演出预告」列表页，返回【开票】公告文章列表"""
+    """抓中央民族乐团「演出预告」列表页，返回全部文章
+    kind: open=【开票】公告 / dyn=演出预告动态（含其他场馆演出官宣）"""
     r = http_get(CNTO_LIST_URL)
     if r.encoding is None or r.encoding.lower() in ("iso-8859-1", "ascii"):
         r.encoding = "utf-8"  # 服务器未声明字符集，页面实为 UTF-8
@@ -128,11 +129,11 @@ def fetch_cnto_opens():
         path, title = m.group(1).strip(), html.unescape(m.group(2)).strip()
         if path.endswith("yanchuzixun_list.shtml") or path in seen:
             continue
-        if not (title.startswith("【开票") or title.startswith("【购票")):
-            continue
         seen.add(path)
+        kind = "open" if (title.startswith("【开票")
+                          or title.startswith("【购票")) else "dyn"
         items.append({"pid": f"cnto:{path}", "title": title,
-                      "url": CNTO_BASE + path})
+                      "url": CNTO_BASE + path, "kind": kind})
     return items
 
 
@@ -404,10 +405,10 @@ def maybe_alert(state, reason: str):
 # 事件与消息
 # ----------------------------------------------------------------------------
 def fmt_event(e):
-    if e.get("url"):  # 中央民族乐团开票公告（详情见文章）
+    if e.get("url"):  # 中央民族乐团公告（详情见文章）
         return "\n".join([f"**{e['name']}**",
                           f"- 场馆：{e['vname']}",
-                          f"- [查看开票公告]({e['url']})"])
+                          f"- [{e.get('link_label', '查看详情')}]({e['url']})"])
     lines = [f"**{e['name']}**"]
     lines.append(f"- 场馆：{e['vname']}")
     lines.append(f"- 时间：{e['date_range']}")
@@ -424,12 +425,13 @@ def fmt_event(e):
 
 def build_message(events):
     tag = {"new_on_sale": "新开票", "on_sale": "正式开票",
-           "session_added": "加场", "upcoming": "官宣待开票"}
+           "session_added": "加场", "upcoming": "官宣待开票",
+           "cnto_dyn": "乐团动态"}
     parts = ["## 🎫 开票提醒\n"]
     by_type = {}
     for e in events:
         by_type.setdefault(e["type"], []).append(e)
-    order = ["new_on_sale", "on_sale", "session_added", "upcoming"]
+    order = ["new_on_sale", "on_sale", "session_added", "upcoming", "cnto_dyn"]
     for t in order:
         for i, e in enumerate(by_type.get(t, []), 1):
             prefix = tag[t]
@@ -605,24 +607,31 @@ def monitor(cfg, state):
                 maybe_alert(state, f"中央民族乐团演出预告连续{streak}次抓取失败: {e}")
             articles = None
         if articles is not None:
-            cnto_first = state.get("cnto_init") is None  # 首次接入静默收录
+            cnto_first = state.get("cnto_v2") is None  # 扩全量文章后首扫静默收录
             for a in articles:
                 if a["pid"] in state["products"]:
                     continue
                 state["products"][a["pid"]] = {
                     "status": "已发布", "name": a["title"], "vname": CNTO_VENUE,
                     "bucket": "cnto", "dates": [], "url": a["url"],
+                    "kind": a["kind"],
                     "first_seen": today.strftime("%Y-%m-%d %H:%M"),
                 }
                 if bootstrap or cnto_first:
                     continue
-                e = {"type": "new_on_sale", "pid": a["pid"], "name": a["title"],
-                     "vname": CNTO_VENUE, "date_range": "详见公告",
-                     "url": a["url"]}
+                if a["kind"] == "open":
+                    e = {"type": "new_on_sale", "pid": a["pid"], "name": a["title"],
+                         "vname": CNTO_VENUE, "date_range": "详见公告",
+                         "url": a["url"], "link_label": "查看开票公告"}
+                else:  # 演出预告/动态（含其他场馆演出官宣）
+                    e = {"type": "cnto_dyn", "pid": a["pid"], "name": a["title"],
+                         "vname": CNTO_VENUE, "date_range": "详见公告",
+                         "url": a["url"], "link_label": "查看演出详情"}
                 events.append(e); log_week_event(state, e)
             state["cnto_init"] = today.strftime("%Y-%m-%d")
+            state["cnto_v2"] = today.strftime("%Y-%m-%d")
             if cnto_first:
-                print(f"[OK] 民族音乐厅首次收录 {len(articles)} 条开票公告（静默）")
+                print(f"[OK] 民族音乐厅全量文章首次收录 {len(articles)} 条（静默）")
 
     # ---- 北京音乐厅 / 中山公园音乐堂 ----
     if cfg["venues"].get("bjyt", True):
@@ -698,7 +707,8 @@ def weekly(cfg, state):
     lim = (today - dt.timedelta(days=7)).strftime("%Y-%m-%d")
     logs = [x for x in state.get("week_log", []) if x["ts"] >= lim]
     tag = {"new_on_sale": "新开票", "on_sale": "正式开票",
-           "session_added": "加场", "upcoming": "官宣待开票"}
+           "session_added": "加场", "upcoming": "官宣待开票",
+           "cnto_dyn": "乐团动态"}
 
     lines = [f"## 📊 开票监控周报（{start} ~ {end}）\n"]
     if logs:
