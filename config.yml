@@ -8,3 +8,4 @@ venues:
   cnto: true             # 中央民族乐团·民族音乐厅（开票公告文章）
   bjyt: true             # 北京音乐厅（官方API，在售/待售项目）
   zsyt: true             # 中山公园音乐堂（官方授权订票站列表）
+  gtys: true             # 国图艺术中心（官网屏蔽海外IP，走购票通渠道）

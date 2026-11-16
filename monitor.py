@@ -24,6 +24,7 @@ import json
 import html
 import os
 import re
+import subprocess
 import sys
 import time
 import datetime as dt
@@ -59,6 +60,11 @@ ZSYT_URL = "http://www.zsyyt.org/text_list.asp"
 ZSYT_BASE = "http://www.zsyyt.org/"
 ZSYT_VENUE = "中山公园音乐堂"
 
+QPT_URL = "https://www.qianpiaotong.cn/mobile/ProductList.shtml"
+QPT_LIST_URL = "https://www.qianpiaotong.cn/mobile/ProductList.shtml"
+QPT_BASE = "https://www.qianpiaotong.cn"
+GTYS_VENUE = "国图艺术中心"
+
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 TIMEOUT = 30
@@ -79,7 +85,7 @@ DEFAULT_CONFIG = {
     "months_ahead": 2,        # 监控当月起共 3 个月（current + 2）
     "push_upcoming": False,   # 新演出官宣为「即将开票」时是否也推送
     "venues": {"ncpa": True, "bpac": True, "taihu": False, "cnto": True,
-               "bjyt": True, "zsyt": True},
+               "bjyt": True, "zsyt": True, "gtys": True},
 }
 
 # ----------------------------------------------------------------------------
@@ -198,6 +204,71 @@ def fetch_zsyt_products():
             "price": prices,
             "buy_url": ZSYT_BASE + f"pic_detail.asp?id={m.group(1)}",
         })
+    return out
+
+
+def fetch_gtys_products():
+    """国图艺术中心演出列表（官网gtyszx.com屏蔽海外IP，改用购票通代理渠道）。
+    该站对python-requests的请求会挂起，改用curl子进程。"""
+    jar = "/tmp/.qpt_cookies"
+    def _curl(url, post=False, page=1):
+        cmd = ["curl", "-s", "--compressed", "--max-time", str(TIMEOUT),
+               "-A", UA, "-c", jar, "-b", jar, url]
+        if post:
+            cmd = ["curl", "-s", "--compressed", "--max-time", str(TIMEOUT),
+                   "-A", UA, "-c", jar, "-b", jar,
+                   "-H", "X-Requested-With: XMLHttpRequest",
+                   "-H", f"Referer: {QPT_LIST_URL}",
+                   "--data-urlencode", "kw=国图",
+                   "-d", f"p_typeID=&datetype=&sorttype=&start=&end=&pageindex={page}",
+                   url]
+        p = subprocess.run(cmd, capture_output=True, text=True,
+                           timeout=TIMEOUT + 10, check=True)
+        return p.stdout
+
+    _curl(QPT_LIST_URL)  # 预热会话
+    out, seen = [], set()
+    for page in range(1, 9):
+        text = _curl(QPT_URL, post=True, page=page)
+        lis = re.findall(r"<li>(.*?)</li>", text, re.S)
+        if not lis:
+            break
+        for li in lis:
+            m = re.search(r'href="(/mobile/Product/(\d+)\.shtml)"', li)
+            if not m:
+                continue
+            gid = m.group(2)
+            if gid in seen:
+                continue
+            seen.add(gid)
+            title = re.search(r'<div class="title">([^<]+)</div>', li)
+            desc = re.findall(r"<p>\s*([^<]+?)\s*</p>", li)
+            tag = re.search(r'<div class="tag[^"]*">([^<]+)</div>', li)
+            price = re.search(r'<div class="price"[^>]*>(.*?)</div>', li, re.S)
+            if not (title and desc):
+                continue
+            venue = re.sub(r"<[^>]+>|\s+", "", desc[1]) if len(desc) > 1 else ""
+            if "国图" not in venue:
+                continue
+            t = tag.group(1).strip() if tag else ""
+            if any(w in t for w in ("售罄", "结束", "停售")):
+                continue
+            status = STATUS_ONSALE if any(
+                w in t for w in ("热销", "在售", "售票", "预售", "销售")) else STATUS_UPCOMING
+            dates = sorted({x.replace(".", "-") for x in
+                            re.findall(r"\d{4}\.\d{2}\.\d{2}", desc[0])})
+            prices = re.sub(r"<[^>]+>|\s+", "", price.group(1)) if price else ""
+            out.append({
+                "pid": f"gtys:{gid}",
+                "name": title.group(1).strip(),
+                "status": status,
+                "vname": venue,
+                "dates": dates,
+                "price": prices,
+                "buy_url": QPT_BASE + m.group(1),
+            })
+    if not out:
+        raise RuntimeError("购票通列表为空或结构变更")
     return out
 
 
@@ -633,11 +704,13 @@ def monitor(cfg, state):
             if cnto_first:
                 print(f"[OK] 民族音乐厅全量文章首次收录 {len(articles)} 条（静默）")
 
-    # ---- 北京音乐厅 / 中山公园音乐堂 ----
+    # ---- 北京音乐厅 / 中山公园音乐堂 / 国图艺术中心 ----
     if cfg["venues"].get("bjyt", True):
         scan_ext_products(state, cfg, events, fetch_bjyt_products, "bjyt", today)
     if cfg["venues"].get("zsyt", True):
         scan_ext_products(state, cfg, events, fetch_zsyt_products, "zsyt", today)
+    if cfg["venues"].get("gtys", True):
+        scan_ext_products(state, cfg, events, fetch_gtys_products, "gtys", today)
 
     # ---- 首启收尾 ----
     if bootstrap:
@@ -681,7 +754,7 @@ def prune(state):
             continue
         dates = rec.get("dates") or []
         last_date = max(dates) if dates else (rec.get("first_seen") or "")
-        if rec.get("bucket") in ("bjyt", "zsyt"):
+        if rec.get("bucket") in ("bjyt", "zsyt", "gtys"):
             # 外部源：项目下架/过期即清理（dates已为ISO格式）
             if dates and last_date < cutoff:
                 del state["products"][pid]
