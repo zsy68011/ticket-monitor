@@ -94,7 +94,7 @@ UPCOMING_RECHECK_EVERY_MIN = 0  # >0 时限制对「即将开票」商品的复�
 
 DEFAULT_CONFIG = {
     "months_ahead": 2,        # 监控当月起共 3 个月（current + 2）
-    "push_upcoming": False,   # 新演出官宣为「即将开票」时是否也推送
+    "push_upcoming": True,    # 新演出官宣为「即将开票」时也推送（用户要提前选演出）
     "venues": {"ncpa": True, "bpac": True, "taihu": False, "cnto": True,
                "bjyt": True, "zsyt": True, "gtys": True, "clcn": True,
                "xsd": True},
