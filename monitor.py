@@ -88,7 +88,8 @@ STATUS_ENDED = "已结束"
 WPOS_ID = "北京艺术中心"
 WPOS_ID_TAIHU = "台湖"
 
-ALERT_COOLDOWN_HOURS = 12      # 故障告警冷却，避免每次轮询都轰炸
+ALERT_FAIL_STREAK = 5          # 连续5次失败才告警（失败期间数据不丢，恢复后自动补齐）
+ALERT_COOLDOWN_HOURS = 20      # 告警冷却：同一故障每天最多提醒1次
 WEEK_LOG_DAYS = 14             # 周报事件日志保留天数
 UPCOMING_RECHECK_EVERY_MIN = 0  # >0 时限制对「即将开票」商品的复查频率（分钟）
 
@@ -376,7 +377,7 @@ def scan_articles(state, cfg, events, fetcher, bucket, today):
         streak = state.get(f"{bucket}_fail", 0) + 1
         state[f"{bucket}_fail"] = streak
         print(f"[ERR] {bucket} 抓取失败: {e}")
-        if streak >= 2:
+        if streak >= ALERT_FAIL_STREAK:
             maybe_alert(state, f"{bucket} 连续{streak}次抓取失败: {e}")
         return
     first = state.get(init_key) is None
@@ -414,7 +415,7 @@ def scan_ext_products(state, cfg, events, fetcher, bucket, today):
         streak = state.get(f"{bucket}_fail", 0) + 1
         state[f"{bucket}_fail"] = streak
         print(f"[ERR] {bucket} 抓取失败: {e}")
-        if streak >= 2:  # 连续2次失败才告警
+        if streak >= ALERT_FAIL_STREAK:  # 连续5次失败才告警
             maybe_alert(state, f"{bucket} 连续{streak}次抓取失败: {e}")
         return
 
@@ -742,9 +743,15 @@ def monitor(cfg, state):
     today = now_bj()
     products, failed_months = collect_products(cfg)
 
-    # 网站异常 -> 告警（带冷却）
+    # 网站异常 -> 连续N次失败才告警（期间数据不丢，恢复轮自动补齐）
     if failed_months:
-        maybe_alert(state, f"演出日历 {','.join(failed_months)} 抓取失败")
+        cal_streak = state.get("cal_fail", 0) + 1
+        state["cal_fail"] = cal_streak
+        if cal_streak >= ALERT_FAIL_STREAK:
+            maybe_alert(state, f"演出日历已连续{cal_streak}轮抓取失败: "
+                          f"{','.join(failed_months)}")
+    else:
+        state["cal_fail"] = 0
 
     edge_month = month_range(cfg["months_ahead"])[-1]
     edge_first_poll = state["edge_month_init"].get(edge_month) is None
@@ -824,9 +831,14 @@ def monitor(cfg, state):
             elif status == STATUS_ENDED:
                 state["upcoming_checked"].pop(pid, None)
 
-    # 商品详情接口大面积异常也告警
+    # 商品详情接口大面积异常也纳入连续失败计数
     if detail_total and detail_fail == detail_total:
-        maybe_alert(state, "票务详情接口全部请求失败")
+        d_streak = state.get("detail_fail", 0) + 1
+        state["detail_fail"] = d_streak
+        if d_streak >= ALERT_FAIL_STREAK:
+            maybe_alert(state, f"票务详情接口已连续{d_streak}轮全部请求失败")
+    else:
+        state["detail_fail"] = 0
 
     # ---- 中央民族乐团·民族音乐厅：开票公告文章 ----
     if cfg["venues"].get("cnto", True):
@@ -837,7 +849,7 @@ def monitor(cfg, state):
             print(f"[ERR] 民族音乐厅列表抓取失败: {e}")
             streak = state.get("cnto_fail", 0) + 1
             state["cnto_fail"] = streak
-            if streak >= 2:  # 连续2次失败才告警，瞬时抖动静默重试
+            if streak >= ALERT_FAIL_STREAK:  # 连续5次失败才告警
                 maybe_alert(state, f"中央民族乐团演出预告连续{streak}次抓取失败: {e}")
             articles = None
         if articles is not None:
