@@ -33,7 +33,7 @@ main{padding:10px 10px 90px}
 .col7{min-height:78px}
 .cell{border-top:1px solid var(--line);border-left:1px solid var(--line);padding:3px 2px;min-height:78px;display:flex;flex-direction:column;gap:2px}
 .cell:nth-child(7n+1){border-left:none}
-.dnum{font-size:11px;color:var(--sub);padding:1px 3px;align-self:flex-start}
+.dnum{font-size:11px;color:var(--sub);padding:1px 3px;align-self:flex-start;border:none;background:none}
 .cell.today .dnum{background:var(--ink);color:#fff;border-radius:6px}
 .cell.out .dnum{color:#c2c8d1}
 .ev{font-size:10px;line-height:1.25;border-radius:6px;padding:2px 4px;overflow:hidden;text-align:left;border:none;width:100%}
@@ -42,7 +42,11 @@ main{padding:10px 10px 90px}
 .ev.wait{background:var(--waitbg);color:#9a5c07}
 .ev.end{background:var(--endbg);color:var(--end);text-decoration:line-through}
 .ev.tick{background:var(--tickbg);color:var(--tick)}
-.more{font-size:9px;color:var(--sub);padding-left:4px}
+.more{font-size:10px;color:var(--show);padding:2px 4px;border:none;background:none;text-align:left;font-weight:600}
+.dayh{font-size:14px;margin:2px 0 8px}
+.backb{border:none;background:none;color:var(--show);font-size:13px;padding:0 0 8px;font-weight:600}
+.li .em{font-style:normal;font-weight:700;margin-right:4px}
+.cshow{color:var(--show)}.cwait{color:var(--wait)}.cend{color:var(--end)}.ctick{color:var(--tick)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--sub);padding:10px 4px 0}
 .legend span{display:flex;align-items:center;gap:5px}
 .fab{position:fixed;right:14px;bottom:18px;display:flex;flex-direction:column;gap:8px}
@@ -161,11 +165,12 @@ function render(){
       const em=ev.type==='tick'?'票':(ev.st===0?'演':(ev.st===1?'待':'终'));
       return '<button class="ev '+cls+'" data-k="'+key+'" data-i="'+evs[key].indexOf(ev)+'"><i class="em">'+em+'</i>'+esc(ev.name.slice(0,9))+'</button>';
     }).join('');
-    const more=list.length>3?'<div class="more">+'+(list.length-3)+'</div>':'';
-    html+='<div class="cell'+(key===today?' today':'')+'"><div class="dnum">'+dn+'</div>'+cellEv+more+'</div>';
+    const more=list.length>3?'<button class="more" data-k="'+key+'">+'+(list.length-3)+' 项</button>':'';
+    html+='<div class="cell'+(key===today?' today':'')+'"><button class="dnum" data-k="'+key+'">'+dn+'</button>'+cellEv+more+'</div>';
   }
   $('grid').innerHTML=html;
-  $('grid').querySelectorAll('.ev').forEach(b=>b.onclick=()=>openSheet(evs[b.dataset.k][+b.dataset.i]));
+  $('grid').querySelectorAll('.ev').forEach(b=>b.onclick=()=>{sheetDay=null;openSheet(evs[b.dataset.k][+b.dataset.i])});
+  $('grid').querySelectorAll('.more,.dnum').forEach(b=>b.onclick=()=>openDaySheet(b.dataset.k));
   renderList(evs,y,m);
   curEvs=evs;
 }
@@ -182,15 +187,33 @@ function renderList(evs,y,m){
     });
   });
   $('listview').innerHTML=html||'<div class="empty">本月暂无演出记录</div>';
-  $('listview').querySelectorAll('.li').forEach(b=>b.onclick=()=>openSheet(evs[b.dataset.k][+b.dataset.i]));
+  $('listview').querySelectorAll('.li').forEach(b=>b.onclick=()=>{sheetDay=null;openSheet(evs[b.dataset.k][+b.dataset.i])});
+}
+let sheetDay=null;
+function openDaySheet(key){
+  sheetDay=key;
+  const list=(curEvs[key]||[]).slice().sort((a,b)=>(a.type==='tick'?-1:0)-(b.type==='tick'?-1:0));
+  const ymd=(+key.slice(0,4))+'年'+(+key.slice(5,7))+'月'+(+key.slice(8,10))+'日';
+  let html='<button class="backb" id="dayclose">‹ 关闭</button><h2 class="dayh">'+ymd+'（'+list.length+' 项）</h2>';
+  list.forEach((ev,i)=>{
+    const cls=ev.type==='tick'?'ctick':(ev.st===2?'cend':(ev.st===0?'cshow':'cwait'));
+    const em=ev.type==='tick'?'票':(ev.st===0?'演':(ev.st===1?'待':'终'));
+    const tag=ev.type==='tick'?'开票':(ev.st===0?'演出':(ev.st===1?'待开票':'已结束'));
+    html+='<button class="li" data-i="'+i+'"><div class="body"><div class="nm"><i class="em '+cls+'">'+em+'</i>['+tag+'] '+esc(ev.name)+'</div><div class="mt">'+esc(ev.venue||'')+(ev.status&&ev.type!=='tick'?' · '+esc(ev.status):'')+'</div></div></button>';
+  });
+  $('sbody').innerHTML=html;
+  $('sbody').querySelectorAll('.li').forEach(b=>b.onclick=()=>openSheet(list[+b.dataset.i]));
+  $('dayclose').onclick=()=>{$('sheet').classList.remove('open');sheetDay=null};
+  $('sheet').classList.add('open');
 }
 function openSheet(ev){
+  const back=sheetDay?'<button class="backb" id="dayback">‹ 返回当天列表</button>':'';
   const stCls=ev.type==='tick'?'s0':(ev.st===0?'s0':(ev.st===1?'s1':'s2'));
   const stTxt=ev.type==='tick'?'开票节点':'演出';
   let links='';
   if(ev.buy) links+='<a href="'+esc(ev.buy)+'" target="_blank">购票页面</a>';
   if(ev.url&&ev.url!==ev.buy) links+='<a href="'+esc(ev.url)+'" target="_blank">详情页</a>';
-  $('sbody').innerHTML='<h2>'+esc(ev.name)+'</h2>'
+  $('sbody').innerHTML=back+'<h2>'+esc(ev.name)+'</h2>'
     +'<div><span class="st '+stCls+'">'+stTxt+'</span> '+(ev.type!=='tick'&&ev.status?'<span class="st s'+(ev.st??1)+'">'+esc(ev.status)+'</span>':'')+'</div>'
     +'<div class="kv">'
     +'<div class="k">场馆</div><div>'+esc(ev.venue||'—')+'</div>'
@@ -200,6 +223,7 @@ function openSheet(ev){
     +'</div>'
     +(links?'<div class="links">'+links+'</div>':'')
     +(ev.type==='tick'&&!ev.buy?'<div style="font-size:12px;color:var(--sub);margin-top:8px">该演出暂无可用购票链接，请到对应场馆官网购买</div>':'');
+  if(sheetDay)$('dayback').onclick=()=>openDaySheet(sheetDay);
   $('sheet').classList.add('open');
 }
 function buildChips(){
@@ -222,7 +246,7 @@ $('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);ren
 $('today').onclick=()=>{view=new Date();render()};
 $('refresh').onclick=load;
 $('toggle').onclick=()=>{listMode=!listMode;$('calview').style.display=listMode?'none':'';$('listview').style.display=listMode?'block':'none';$('toggle').textContent=listMode?'切换月历':'切换列表'};
-$('sheet').onclick=e=>{if(e.target===$('sheet'))$('sheet').classList.remove('open')};
+$('sheet').onclick=e=>{if(e.target===$('sheet')){$('sheet').classList.remove('open');sheetDay=null}};
 load();
 </script>
 </body>
