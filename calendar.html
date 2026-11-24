@@ -65,7 +65,9 @@ main{padding:10px 10px 90px}
 .links a{display:inline-block;margin:4px 8px 0 0;font-size:13px;color:var(--show);text-decoration:none;border:1px solid var(--show);border-radius:8px;padding:5px 10px}
 .err{padding:40px 16px;text-align:center;color:var(--sub);font-size:14px;line-height:1.8}
 #listview{display:none}
-.li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%}
+.li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;cursor:pointer}
+.bl{flex:0 0 auto;align-self:center;font-size:12px;color:var(--show);border:1px solid var(--show);border-radius:8px;padding:4px 8px;text-decoration:none;font-weight:600}
+.ev .lk{font-style:normal;font-size:8px;margin-left:1px;opacity:.8}
 .li .dd{text-align:center;min-width:44px}
 .li .dd b{font-size:18px;display:block}
 .li .dd i{font-style:normal;font-size:10px;color:var(--sub)}
@@ -104,7 +106,14 @@ main{padding:10px 10px 90px}
 </main>
 <div class="sheet" id="sheet"><div class="panel"><div class="grab"></div><div id="sbody"></div></div></div>
 <script>
-const RAW='https://raw.githubusercontent.com/zsy68011/ticket-monitor/main/state.json';
+const REPO='zsy68011/ticket-monitor';
+const RAW_SOURCES=[
+ {u:'https://raw.githubusercontent.com/'+REPO+'/main/state.json',t:'json',n:''},
+ {u:'https://api.github.com/repos/'+REPO+'/contents/state.json?ref=main',t:'ghapi',n:''},
+ {u:'https://gcore.jsdelivr.net/gh/'+REPO+'@main/state.json',t:'json',n:'（缓存源，可能滞后）'},
+ {u:'https://testingcf.jsdelivr.net/gh/'+REPO+'@main/state.json',t:'json',n:'（缓存源，可能滞后）'}
+];
+let loadFails=0;
 const VENUE={ncpa:'国家大剧院',bpac:'北京艺术中心',cnto:'民族音乐厅',bjyt:'北京音乐厅',zsyt:'中山音乐堂',gtys:'国图艺术中心',clcn:'首都图书馆',xsd:'朝阳宣传文化中心'};
 const STC={'售卖中':0,'即将开票':1,'已发布':1,'已结束':2};
 let state=null, view=new Date(), venue='all', showEnd=false, listMode=false;
@@ -112,18 +121,36 @@ const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 
-async function load(){
+async function fetchJson(src,ms){
+  const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),ms);
   try{
-    const r=await fetch(RAW+'?t='+Date.now(),{cache:'no-store'});
+    const r=await fetch(src.u+(src.t==='json'?'?t='+Date.now():''),{cache:'no-store',signal:ctl.signal});
     if(!r.ok) throw new Error('HTTP '+r.status);
-    state=await r.json();
-    buildChips(); render(); $('refresh').textContent='刷新 ✓';
-    const lg=(state.week_log||[]).map(e=>e.ts).sort().pop();
-    $('freshtime').textContent=lg?('监控数据截至 '+lg):'数据已加载';
-  }catch(e){
-    $('freshtime').textContent='';
-    $('grid').innerHTML='<div class="err" style="grid-column:1/-1">数据加载失败：<br>'+e.message+'<br>请点右下角「刷新」重试</div>';
+    if(src.t!=='ghapi') return await r.json();
+    const j=await r.json();
+    if(!j.content) throw new Error('API限流');
+    const bin=atob(j.content.replace(/\s/g,''));
+    const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+  }finally{clearTimeout(tm)}
+}
+async function load(){
+  $('freshtime').textContent='数据加载中…';
+  for(const src of RAW_SOURCES){
+    try{
+      const d=await fetchJson(src,8000);
+      if(!d||!d.products) throw new Error('数据格式异常');
+      state=d; loadFails=0;
+      buildChips(); render(); $('refresh').textContent='刷新 ✓';
+      const lg=(state.week_log||[]).map(e=>e.ts).sort().pop();
+      $('freshtime').textContent=(lg?('监控数据截至 '+lg):'数据已加载')+src.n;
+      return;
+    }catch(e){}
   }
+  $('freshtime').textContent='';
+  $('grid').innerHTML='<div class="err" style="grid-column:1/-1">所有线路均加载失败<br>多在网络切换后出现<br>点「刷新」重试，通常换一下 WiFi/流量就恢复</div>';
+  if(loadFails++<2) setTimeout(load,4000);
 }
 function eventsOfMonth(){
   const out={}; const add=(k,ev)=>{(out[k]=out[k]||[]).push(ev)};
@@ -133,9 +160,10 @@ function eventsOfMonth(){
     if(!showEnd && p.status==='已结束') continue;
     if(venue!=='all' && p.bucket!==venue) continue;
     const st=STC[p.status]??1;
+    const buy=p.buy_url||((p.bucket==='ncpa'||p.bucket==='bpac')?'https://wticket.chncpa.org/product.html?id='+pid:'');
     (p.dates||[]).forEach(dt=>{
       if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)) return;
-      add(dt,{type:st===2?'end':'show',st,name:p.name,venue:p.vname||VENUE[p.bucket]||'',pid,status:p.status,price:p.price,buy:p.buy_url,url:p.url,fs:p.first_seen});
+      add(dt,{type:st===2?'end':'show',st,name:p.name,venue:p.vname||VENUE[p.bucket]||'',pid,status:p.status,price:p.price,buy:buy,url:p.url,fs:p.first_seen});
     });
   }
   (state.week_log||[]).forEach(e=>{
@@ -144,7 +172,7 @@ function eventsOfMonth(){
     if(venue!=='all' && p.bucket && p.bucket!==venue) return;
     const dt=(e.ts||'').slice(0,10);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)) return;
-    add(dt,{type:'tick',name:e.name,venue:e.vname||(p.vname||''),pid:e.pid,status:p.status||'售卖中',price:e.price||p.price,buy:p.buy_url||p.url,fs:p.first_seen,ts:e.ts});
+    add(dt,{type:'tick',name:e.name,venue:e.vname||(p.vname||''),pid:e.pid,status:p.status||'售卖中',price:e.price||p.price,buy:p.buy_url||((p.bucket==='ncpa'||p.bucket==='bpac')?'https://wticket.chncpa.org/product.html?id='+e.pid:(p.url||'')),fs:p.first_seen,ts:e.ts});
   });
   return out;
 }
@@ -163,7 +191,7 @@ function render(){
     const cellEv=list.slice(0,3).map(ev=>{
       const cls=ev.type==='tick'?'tick':(ev.st===2?'end':(ev.st===0?'show':'wait'));
       const em=ev.type==='tick'?'票':(ev.st===0?'演':(ev.st===1?'待':'终'));
-      return '<button class="ev '+cls+'" data-k="'+key+'" data-i="'+evs[key].indexOf(ev)+'"><i class="em">'+em+'</i>'+esc(ev.name.slice(0,9))+'</button>';
+      return '<button class="ev '+cls+'" data-k="'+key+'" data-i="'+evs[key].indexOf(ev)+'"><i class="em">'+em+'</i>'+esc(ev.name.slice(0,9))+(ev.buy?'<i class="lk">↗</i>':'')+'</button>';
     }).join('');
     const more=list.length>3?'<button class="more" data-k="'+key+'">+'+(list.length-3)+' 项</button>':'';
     html+='<div class="cell'+(key===today?' today':'')+'"><button class="dnum" data-k="'+key+'">'+dn+'</button>'+cellEv+more+'</div>';
@@ -183,7 +211,7 @@ function renderList(evs,y,m){
   days.forEach(k=>{
     evs[k].slice().sort((a,b)=>(a.type==='tick'?-1:0)-(b.type==='tick'?-1:0)).forEach(ev=>{
       const tag=ev.type==='tick'?'开票':(ev.st===0?'演出':(ev.st===1?'待开票':'已结束'));
-      html+='<button class="li" data-k="'+k+'" data-i="'+evs[k].indexOf(ev)+'"><div class="dd"><b>'+ +k.slice(8,10) +'</b><i>'+(ev.type==='tick'?'开票':'演出')+'</i></div><div class="body"><div class="nm">['+tag+'] '+esc(ev.name)+'</div><div class="mt">'+esc(ev.venue)+(ev.status&&ev.type!=='tick'?' · '+ev.status:'')+'</div></div></button>';
+      html+='<div class="li" data-k="'+k+'" data-i="'+evs[k].indexOf(ev)+'"><div class="dd"><b>'+ +k.slice(8,10) +'</b><i>'+(ev.type==='tick'?'开票':'演出')+'</i></div><div class="body"><div class="nm">['+tag+'] '+esc(ev.name)+'</div><div class="mt">'+esc(ev.venue)+(ev.status&&ev.type!=='tick'?' · '+ev.status:'')+'</div></div>'+(ev.buy?'<a class="bl" href="'+esc(ev.buy)+'" target="_blank" rel="noopener">购票 ↗</a>':'')+'</div>';
     });
   });
   $('listview').innerHTML=html||'<div class="empty">本月暂无演出记录</div>';
@@ -199,7 +227,7 @@ function openDaySheet(key){
     const cls=ev.type==='tick'?'ctick':(ev.st===2?'cend':(ev.st===0?'cshow':'cwait'));
     const em=ev.type==='tick'?'票':(ev.st===0?'演':(ev.st===1?'待':'终'));
     const tag=ev.type==='tick'?'开票':(ev.st===0?'演出':(ev.st===1?'待开票':'已结束'));
-    html+='<button class="li" data-i="'+i+'"><div class="body"><div class="nm"><i class="em '+cls+'">'+em+'</i>['+tag+'] '+esc(ev.name)+'</div><div class="mt">'+esc(ev.venue||'')+(ev.status&&ev.type!=='tick'?' · '+esc(ev.status):'')+'</div></div></button>';
+    html+='<div class="li" data-i="'+i+'"><div class="body"><div class="nm"><i class="em '+cls+'">'+em+'</i>['+tag+'] '+esc(ev.name)+'</div><div class="mt">'+esc(ev.venue||'')+(ev.status&&ev.type!=='tick'?' · '+esc(ev.status):'')+'</div></div>'+(ev.buy?'<a class="bl" href="'+esc(ev.buy)+'" target="_blank" rel="noopener">购票 ↗</a>':'')+'</div>';
   });
   $('sbody').innerHTML=html;
   $('sbody').querySelectorAll('.li').forEach(b=>b.onclick=()=>openSheet(list[+b.dataset.i]));
