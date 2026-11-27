@@ -9,10 +9,10 @@
   "10002895": 1794450641.6942546,
   "10002909": 1794210713.874205,
   "10002984": 1795508134.0089383,
-  "10003006": 1795769131.584557,
-  "10003039": 1795769132.819498,
-  "10003040": 1795769133.6844866,
-  "10003042": 1795769134.5544806,
+  "10003006": 1795770048.7996964,
+  "10003039": 1795770050.058687,
+  "10003040": 1795770051.0276628,
+  "10003042": 1795770051.981727,
   "10003048": 1794210721.0091348,
   "10003049": 1795429848.289363,
   "10003050": 1794210723.4806798,
@@ -44,13 +44,13 @@
   "10003090": 1795671045.7243252,
   "10003091": 1795671046.7556653,
   "10003092": 1795584648.8753302,
-  "10003093": 1795769135.3487458,
+  "10003093": 1795770052.8785856,
   "10003094": 1795584650.8366194,
   "10003095": 1795671048.838391,
   "10003096": 1795584652.5183406,
-  "10003097": 1795769136.1620336,
-  "10003098": 1795769137.0169144,
-  "10003100": 1795769137.8443696
+  "10003097": 1795770053.7771597,
+  "10003098": 1795770054.710053,
+  "10003100": 1795770055.6116283
  },
  "week_log": [
   {
@@ -591,6 +591,24 @@
    "name": "“国韵悠长”2027民族管弦乐新年音乐会",
    "vname": "音乐厅",
    "dates": "2026-12-23 ~ 2026-12-23",
+   "price": ""
+  },
+  {
+   "ts": "2026-11-27 17:01",
+   "type": "clcn_dyn",
+   "pid": "clcn:13896",
+   "name": "东方天籁：朱哲琴的音乐世界",
+   "vname": "首都图书馆",
+   "dates": "详见公告",
+   "price": ""
+  },
+  {
+   "ts": "2026-11-27 17:01",
+   "type": "clcn_dyn",
+   "pid": "clcn:13895",
+   "name": "外柔内刚，文武兼备——以百花公主、明珠公主为例论北方昆曲刀马旦表演艺术",
+   "vname": "首都图书馆",
+   "dates": "详见公告",
    "price": ""
   }
  ],
@@ -3629,6 +3647,506 @@
     "2026-12-23"
    ],
    "first_seen": "2026-11-27 15:00"
+  },
+  "clcn:13824": {
+   "status": "已发布",
+   "name": "英文故事磨耳朵：Mouse's Wood：A Year in Nature",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13824",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13858": {
+   "status": "已发布",
+   "name": "“美丽的花卉”绘画作品征集活动",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13858",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13935": {
+   "status": "已发布",
+   "name": "网络智力大挑战——书香城图生日宴 邀你悦读寻彩蛋",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13935",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13868": {
+   "status": "已发布",
+   "name": "这一年，首图为你读了哪些好书",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13868",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13922": {
+   "status": "已发布",
+   "name": "像素诗·8K极境： 《飞越之境》",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13922",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13867": {
+   "status": "已发布",
+   "name": "谢谢你，世界",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13867",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13801": {
+   "status": "已发布",
+   "name": "“从郭沫若到《太平年》：中国历史剧的文明寄托”",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13801",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13896": {
+   "status": "已发布",
+   "name": "东方天籁：朱哲琴的音乐世界",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13896",
+   "kind": "clcn_dyn",
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13800": {
+   "status": "已发布",
+   "name": "刀枪的温度：从古龙看武侠经典中武器形象的“变”与“辩”",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13800",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13903": {
+   "status": "已发布",
+   "name": "什刹海传说",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13903",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13917": {
+   "status": "已发布",
+   "name": "不一样的乱世：《资治通鉴》中的战国与三国",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13917",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13932": {
+   "status": "已发布",
+   "name": "比纸还要薄‌30万倍的二维材料",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13932",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13934": {
+   "status": "已发布",
+   "name": "网络智力大挑战——书香城图生日宴 邀你悦读寻彩蛋",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13934",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13913": {
+   "status": "已发布",
+   "name": "AI与机器人：解锁智能新世界",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13913",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13931": {
+   "status": "已发布",
+   "name": "理学家的抑郁与奋斗——阅读真德秀《大学衍义》",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13931",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13852": {
+   "status": "已发布",
+   "name": "等待，原来可以这么美！绘本《一眨眼》阅读分享会",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13852",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13683": {
+   "status": "已发布",
+   "name": "老雷斯的故事",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13683",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13823": {
+   "status": "已发布",
+   "name": "英文故事磨耳朵：Bea's Bad Day",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13823",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13866": {
+   "status": "已发布",
+   "name": "雪夜里的妈妈",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13866",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13920": {
+   "status": "已发布",
+   "name": "像素诗·8K极境： 《丝韵丹青》",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13920",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13897": {
+   "status": "已发布",
+   "name": "冬至藏福，布艺呈祥",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13897",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13865": {
+   "status": "已发布",
+   "name": "爷爷的炉子",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13865",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13849": {
+   "status": "已发布",
+   "name": "宋明理学家眼中的二十四节气——别样的自然人文世界",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13849",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13899": {
+   "status": "已发布",
+   "name": "基于科学真实的“世界观”构建与艺术表达",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13899",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13848": {
+   "status": "已发布",
+   "name": "中国阳历，有节有气",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13848",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13895": {
+   "status": "已发布",
+   "name": "外柔内刚，文武兼备——以百花公主、明珠公主为例论北方昆曲刀马旦表演艺术",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13895",
+   "kind": "clcn_dyn",
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13916": {
+   "status": "已发布",
+   "name": "《资治通鉴·汉纪》与全书体例的奠定",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13916",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13847": {
+   "status": "已发布",
+   "name": "古星图与古代天象里的二十四节气",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13847",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13894": {
+   "status": "已发布",
+   "name": "香山何以成为静宜园——史迹、文献与民间记忆",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13894",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13761": {
+   "status": "已发布",
+   "name": "奇幻山海游（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13761",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13762": {
+   "status": "已发布",
+   "name": "地球生命大冒险（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13762",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13763": {
+   "status": "已发布",
+   "name": "蓝精灵：寻找神秘村（高清影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13763",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13912": {
+   "status": "已发布",
+   "name": "分离焦虑反着来，我替爸妈去上班！",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13912",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13911": {
+   "status": "已发布",
+   "name": "悦读中医·《冬至阳生》儿童冬至养护小课堂",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13911",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13682": {
+   "status": "已发布",
+   "name": "闪电狗",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13682",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13758": {
+   "status": "已发布",
+   "name": "中国恐龙之勇敢小甲龙（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13758",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13759": {
+   "status": "已发布",
+   "name": "地球生命大冒险（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13759",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13760": {
+   "status": "已发布",
+   "name": "蓝精灵：寻找神秘村（高清影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13760",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13825": {
+   "status": "已发布",
+   "name": "英文故事磨耳朵：Winter Is Here",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13825",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13930": {
+   "status": "已发布",
+   "name": "《如愿》选段 合唱体验",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13930",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13757": {
+   "status": "已发布",
+   "name": "奇幻山海游（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13757",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13756": {
+   "status": "已发布",
+   "name": "中国恐龙之勇敢小甲龙（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13756",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13864": {
+   "status": "已发布",
+   "name": "去北极：迁徙路上的动物",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13864",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13887": {
+   "status": "已发布",
+   "name": "贝影流光，钿彩生辉",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13887",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13755": {
+   "status": "已发布",
+   "name": "奇幻山海游（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13755",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13914": {
+   "status": "已发布",
+   "name": "像素诗·8K极境： 《北疆寻踪》",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13914",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13754": {
+   "status": "已发布",
+   "name": "中国恐龙之勇敢小甲龙（4D影片）",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13754",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13863": {
+   "status": "已发布",
+   "name": "小熊奥托雪天历险记",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13863",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13929": {
+   "status": "已发布",
+   "name": "人工智能芯片的奥秘",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13929",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
+  },
+  "clcn:13919": {
+   "status": "已发布",
+   "name": "不朽的旋律——Hi-Fi古典盛宴 听瓦格纳：从乐剧革命到电影配乐鼻祖",
+   "vname": "首都图书馆",
+   "bucket": "clcn",
+   "dates": [],
+   "url": "https://www.clcn.net.cn/event/activity/detail?event_id=13919",
+   "kind": null,
+   "first_seen": "2026-11-27 17:00"
   }
  },
  "cnto_init": "2026-11-27",
@@ -3638,9 +4156,9 @@
  "zsyt_fail": 0,
  "zsyt_init": "2026-11-27",
  "cnto_v2": "2026-11-27",
- "gtys_fail": 6,
+ "gtys_fail": 7,
  "gtys_init": "2026-11-27",
- "clcn_fail": 1,
+ "clcn_fail": 0,
  "clcn_init": "2026-11-27",
  "xsd_fail": 0,
  "xsd_init": "2026-11-27",
@@ -3650,6 +4168,6 @@
  "detail_fail": 0,
  "push_daily": {
   "date": "2026-11-27",
-  "count": 2
+  "count": 3
  }
 }
